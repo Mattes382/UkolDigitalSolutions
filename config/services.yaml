@@ -11,6 +11,10 @@ services:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
+    App\Service\UserService:
+        arguments:
+            $entityManager: '@doctrine.orm.default_entity_manager'
+
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
@@ -28,3 +32,15 @@ services:
         arguments:
             - '@Symfony\Contracts\HttpClient\HttpClientInterface'
             - '@Doctrine\ORM\EntityManagerInterface'
+
+    App\Command\ImportSalariesCommand:
+        tags: [console.command]
+        arguments:
+            - '@Symfony\Contracts\HttpClient\HttpClientInterface'
+            - '@Doctrine\ORM\EntityManagerInterface'
+
+    App\Command\ExportApiIdCommand:
+        arguments:
+            $httpClient: '@Symfony\Contracts\HttpClient\HttpClientInterface'
+            $entityManager: '@Doctrine\ORM\EntityManagerInterface'
+

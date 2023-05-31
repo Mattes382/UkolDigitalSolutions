@@ -10,6 +10,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Throwable;
 
 class ImportUsersCommand extends Command
 {
@@ -24,7 +25,7 @@ class ImportUsersCommand extends Command
         parent::__construct();
     }
 
-    protected function configure() : void
+    protected function configure(): void
     {
         $this->setName('app:import-users')
         ->setDescription('Import users from the database to the API');
@@ -46,17 +47,28 @@ class ImportUsersCommand extends Command
                 dokumentace nepovinne*/
             ];
 
+            try {
+                $response = $this->httpClient->request('POST', 'https://interview-test.digital.cz/api/users', [
+                    'json' => $userData,
+                ]);
 
-            $response = $this->httpClient->request('POST', 'https://interview-test.digital.cz/api/users', [
-                'json' => $userData,
-            ]);
+                $content = $response->getContent();
+                $apiUser = json_decode($content, true);
 
+                if (is_array($apiUser) && isset($apiUser['id'])) {
+                    $externalApiId = (string) $apiUser['id'];
+                    $user->setExternalApiId($externalApiId);
+                    $this->entityManager->flush();
 
-            $statusCode = $response->getStatusCode();
-            $content = $response->getContent();
-
-
-            $output->writeln('User imported: ' . $user->getEmail());
+                    $output->writeln(
+                        'User imported: ' . $user->getEmail() . ' (External API ID: ' . $externalApiId . ')',
+                    );
+                } else {
+                    $output->writeln('Failed to import user: ' . $user->getEmail() . ' - Invalid API response');
+                }
+            } catch (Throwable $e) {
+                $output->writeln('Failed to import user: ' . $user->getEmail() . ' - ' . $e->getMessage());
+            }
         }
 
         return Command::SUCCESS;

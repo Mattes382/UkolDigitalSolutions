@@ -20,14 +20,14 @@ class Money
     private ?int $id = null;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", nullable=false)
      */
-    private ?DateTimeInterface $date;
+    private DateTimeInterface $date;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", options={"default" : 0})
      */
-    private ?int $money;
+    private int $money;
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="money", cascade={"persist"})
@@ -50,12 +50,12 @@ class Money
         $this->date = $date;
     }
 
-    public function getMoney(): ?int
+    public function getMoney(): int
     {
         return $this->money;
     }
 
-    public function setMoney(?int $money): void
+    public function setMoney(int $money): void
     {
         $this->money = $money;
     }

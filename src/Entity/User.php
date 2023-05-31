@@ -23,7 +23,7 @@ class User
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private ?string $email = null;
+    private string $email;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -36,8 +36,19 @@ class User
     private ?string $surname = null;
 
     /**
-     * @ORM\OneToMany(targetEntity="Money", mappedBy="user", cascade={"persist"})
+     * @ORM\Column(type="string", length=30, nullable=true)
+     */
+    private ?string $externalApiId;
+
+    /**
+     * @ORM\Column(type="string", length=512, nullable=true)
+     */
+    private ?string $token;
+
+    /**
      * @var Collection<int, Money>
+     *
+     * @ORM\OneToMany(targetEntity="Money", mappedBy="user", cascade={"persist"})
      */
     private Collection $money;
 
@@ -51,7 +62,7 @@ class User
         return $this->id;
     }
 
-    public function getEmail(): ?string
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -107,5 +118,25 @@ class User
     {
         $this->money->removeElement($money);
         $money->setUser(null);
+    }
+
+    public function getExternalApiId(): ?string
+    {
+        return $this->externalApiId;
+    }
+
+    public function setExternalApiId(string $externalApiId): void
+    {
+        $this->externalApiId = $externalApiId;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(?string $token): void
+    {
+        $this->token = $token;
     }
 }
