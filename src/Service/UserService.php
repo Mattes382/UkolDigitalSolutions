@@ -28,15 +28,17 @@ class UserService
 
     public function createUser(string $email, string $name, string $surname): User
     {
-        $user = new User();
-        $user->setEmail($email);
-        $user->setName($name);
-        $user->setSurname($surname);
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $user = new User();
+            $user->setEmail($email);
+            $user->setName($name);
+            $user->setSurname($surname);
 
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
 
-        return $user;
+            return $user;
+        }
     }
 
     public function addMoneyToUser(int $userId, string $date, int $money): void
