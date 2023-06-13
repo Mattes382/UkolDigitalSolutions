@@ -26,9 +26,14 @@ class UserService
         $this->userRepository = $entityManager->getRepository(User::class);
     }
 
-    public function createUser(string $email, string $name, string $surname): User
+    public function createUser(string $email, string $name, string $surname): ?User
     {
-        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (
+            filter_var($email, FILTER_VALIDATE_EMAIL)
+            && strlen($email) <= 255
+            && strlen($name) <= 255
+            && strlen($surname) <= 255
+        ) {
             $user = new User();
             $user->setEmail($email);
             $user->setName($name);
@@ -39,6 +44,8 @@ class UserService
 
             return $user;
         }
+
+        return null;
     }
 
     public function addMoneyToUser(int $userId, string $date, int $money): void

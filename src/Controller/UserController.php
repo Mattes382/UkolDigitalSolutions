@@ -34,7 +34,11 @@ class UserController extends AbstractController
         $name = $data['name'] ?? '';
         $surname = $data['surname'] ?? '';
 
-        $this->userService->createUser($email, $name, $surname);
+        $user = $this->userService->createUser($email, $name, $surname);
+
+        if ($user === null) {
+            return new JsonResponse(['message' => 'User creation failed'], Response::HTTP_BAD_REQUEST);
+        }
 
         return new JsonResponse(['message' => 'User created'], Response::HTTP_CREATED);
     }

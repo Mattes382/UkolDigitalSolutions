@@ -39,8 +39,3 @@ services:
             - '@Symfony\Contracts\HttpClient\HttpClientInterface'
             - '@Doctrine\ORM\EntityManagerInterface'
 
-    App\Command\ExportApiIdCommand:
-        arguments:
-            $httpClient: '@Symfony\Contracts\HttpClient\HttpClientInterface'
-            $entityManager: '@Doctrine\ORM\EntityManagerInterface'
-
