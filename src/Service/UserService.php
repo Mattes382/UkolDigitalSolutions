@@ -6,24 +6,17 @@ namespace App\Service;
 
 use App\Entity\Money;
 use App\Entity\User;
+use App\Repository\UserRepositoryInterface;
 use DateTime;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
 use InvalidArgumentException;
 
 class UserService
 {
-    private EntityManagerInterface $entityManager;
+    private UserRepositoryInterface $userRepository;
 
-    /**
-     * @var EntityRepository<User>
-     */
-    private EntityRepository $userRepository;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(UserRepositoryInterface $userRepository)
     {
-        $this->entityManager = $entityManager;
-        $this->userRepository = $entityManager->getRepository(User::class);
+        $this->userRepository = $userRepository;
     }
 
     public function createUser(string $email, string $name, string $surname): ?User
@@ -39,8 +32,7 @@ class UserService
             $user->setName($name);
             $user->setSurname($surname);
 
-            $this->entityManager->persist($user);
-            $this->entityManager->flush();
+            $this->userRepository->save($user);
 
             return $user;
         }
@@ -58,8 +50,7 @@ class UserService
 
         $user->addMoney($moneyEntity);
 
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+        $this->userRepository->save($user);
     }
 
     /**
@@ -67,46 +58,12 @@ class UserService
      */
     public function getUsersWithMoney(int $page, int $itemsPerPage): array
     {
-        $offset = ($page - 1) * $itemsPerPage;
-
-        $queryBuilder = $this->userRepository->createQueryBuilder('u')
-            ->leftJoin('u.money', 'm')
-            ->setFirstResult($offset)
-            ->setMaxResults($itemsPerPage);
-
-        $users = $queryBuilder->getQuery()->getResult();
-
-        $usersWithMoneyData = [];
-
-        if (is_iterable($users)) {
-            foreach ($users as $user) {
-                /** @var User $user */
-                $userMoney = [];
-                foreach ($user->getMoney() as $money) {
-                    /** @var Money $money */
-                    $userMoney[] = [
-                        'id' => $money->getId(),
-                        'date' => $money->getDate() ? $money->getDate()->format('Y-m-d\TH:i:s.u\Z') : null,
-                        'money' => $money->getMoney(),
-                    ];
-                }
-
-                $usersWithMoneyData[] = [
-                    'id' => $user->getId(),
-                    'email' => $user->getEmail(),
-                    'name' => $user->getName(),
-                    'surname' => $user->getSurname(),
-                    'money' => $userMoney,
-                ];
-            }
-        }
-
-        return $usersWithMoneyData;
+        return $this->userRepository->getUsersWithMoney($page, $itemsPerPage);
     }
 
     private function getUserById(int $id): User
     {
-        $user = $this->userRepository->find($id);
+        $user = $this->userRepository->findById($id);
 
         if (!$user instanceof User) {
             throw new InvalidArgumentException('Invalid user ID.');
